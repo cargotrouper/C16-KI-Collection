@@ -1,0 +1,19 @@
+In dieser Datei werden Abkürzungen erklärt die im Context von Programmierung in StahlControl mit C16 und der Datenbank Struktur:
+Mat = Material
+BA = Betriebsauftrag
+BAG = Betriebsauftrag
+BA1 = Betriebsauftrag
+LFS = Lieferschein
+RID = Ring innen Durchmesser
+RAD = Ring außen Durchmesser
+Tol = Toleranz
+STD = Standard
+Erl = Erlöse
+Ein = Bestellung
+Auf = Auftrag
+Art = Artikel
+Adr = Adresse
+Kos = Kosten
+HuB = Hilfs und Betriebsstoffe
+Fibu = Finanzbuchhaltung
+Konsi = Konsignationslager

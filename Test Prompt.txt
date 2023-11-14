@@ -1,0 +1,7 @@
+Test Prompt:
+Kannst du mir in der Programmiersprache C16 , anhand dem C16 Handbuch und dem bestehenden StahlControl Source Code, einen Funktion schreiben,
+die die Tabelle Mat.Materialdatei 200 durchläuft, und bei jeden Datensatz den Wert Mat.Status = 100 setzt? 
+
+
+
+Kannst du mir in der Programmiersprache C16 , anhand dem C16 Handbuch alle gängigen Datentypen aufstellen mit deren Haupteigenschaften ? 

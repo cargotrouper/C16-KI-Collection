@@ -1,0 +1,421 @@
+@A+
+//==== Business-Control ==================================================
+//
+//  Prozedur    FxK_Main
+//                        OHNE E_R_G
+//  Info
+//    Steuert die Verwaltung der Fixkosten
+//
+//  25.09.2003  ST  Erstellung der Prozedur
+//  12.05.2022  AH  ERX
+//  22.07.2022  HA  Quick Jump
+//
+//  Subprozeduren
+//    sub EvtInit(aEvt  : event): logic
+//    sub RefreshIfm (aName : alpha);
+//    sub RecInit()
+//    sub RecSave() : logic
+//    sub RecCleanup() : logic
+//    sub RecDel()
+//    sub EvtFocusInit (aEvt : event; aFocusObject : int) : logic
+//    sub EvtFocusTerm (aEvt : event; aFocusObject : int) : logic
+//    sub Auswahl(aBereich : alpha;)
+//    sub AusAufart()
+//    sub AusWgr()
+//    sub AusWaehrung()
+//    sub RefreshMode()
+//    sub EvtMenuCommand(aEvt : event; aMenuItem : int) : logic
+//    sub EvtClicked (aEvt : event;) : logic
+//    sub EvtLstDataInit(aEvt : Event; aRecId : int;);
+//    sub EvtLstSelect(aEvt : event; aRecID : int;) : logic
+//    sub EvtClose(aEvt : event;): logic
+//
+//========================================================================
+@I:Def_Global
+@I:Def_Rights
+
+define begin
+  cTitle :    'Fixkosten'
+  cFile :     558
+  cMenuName : 'Std.Bearbeiten'
+  cPrefix :   'FxK'
+  cZList :    $ZL.Fixkosten
+  cKey :      1
+end;
+
+//========================================================================
+// EvtInit
+//          Initialisieren der Applikation
+//========================================================================
+sub EvtInit(
+  aEvt  : event;        // Ereignis
+): logic
+begin
+  gTitle    # Translate(cTitle);
+  gFile     # cFile;
+  gMenuName # cMenuName;
+  gPrefix   # cPrefix;
+  gZLList   # cZList;
+  gKey      # cKey;
+
+Lib_Guicom2:Underline($edFxK.Kostenstelle);
+
+  SetStdAusFeld('edFxK.Kostenstelle' ,'Kostenstelle');
+
+  App_Main:EvtInit(aEvt);
+end;
+
+
+//========================================================================
+//  RefreshIfm
+//            "Infomasken" refreshen
+//========================================================================
+sub RefreshIfm(
+  opt aName : alpha;
+)
+local begin
+  vTmp  : int;
+  Erx   : int;
+end;
+begin
+  $Lb.Nummer -> wpCaption # CnvAi(FxK.lfdNr);
+
+  if (aName='') or (aName='edFxK.Kostenstelle') then begin
+    Erx # RecLink(846,558,1,0);     // Kostenstelle holen
+    if (Erx<=_rLocked) then
+      $lb.Kostenstelle->wpcaption # KSt.Bezeichnung;
+    else
+      $lb.Kostenstelle->wpcaption # '';
+  end;
+
+  // veränderte Felder in Objekte schreiben
+  if (aName<>'') then begin
+    vTmp # gMdi->winsearch(aName);
+    if (vTmp<>0) then
+     vTmp->winupdate(_WinUpdFld2Obj);
+  end;
+
+  // dynamische Pflichtfelder einfärben
+  Lib_Pflichtfelder:PflichtfelderEinfaerben();
+
+end;
+
+
+//========================================================================
+//  RecInit
+//          Init für Änderung und Neuanlage
+//========================================================================
+sub RecInit()
+begin
+  // Felder Disablen durch:
+  //Lib_GuiCom:Disable($...);
+  // Focus setzen auf Feld:
+  $edFxK.Jahr->WinFocusSet(true);
+  $Lb.Nummer -> wpCaption # CnvAi(FxK.lfdNr);
+end;
+
+
+//========================================================================
+//  RecSave
+//          vor Speicherung
+//========================================================================
+sub RecSave() : logic;
+Local begin
+  vNr   : int;
+  Erx   : int;
+end;
+begin
+  // dynamische Pflichtfelder überprüfen
+  if ( !Lib_Pflichtfelder:PflichtfelderPruefenVorSpeichern() ) then
+    RETURN false;
+
+  // logische Prüfung
+  // Nummernvergabe
+  // Satz zurückspeichern & protokolieren
+  if (Mode=c_ModeEdit) then begin
+    Erx # RekReplace(gFile,_recUnlock,'MAN');
+    if (Erx<>_rOk) then begin
+      Msg(001000+Erx,gTitle,0,0,0);
+      RETURN False;
+    end;
+/*
+    "xxx.Änderung.Datum"  # SysDate();
+    "xxx.Änderung.Zeit"   # Now;
+    "xxx.Änderung.User"   # Userinfo(_Username,cnvia(userinfo(_UserCurrent)));
+*/
+    PtD_Main:Compare(gFile);
+
+  end
+  else begin
+
+    vNR # 0;        // An die letzte Position anhängen
+    REPEAT
+      vNr       # vNr + 1;
+      FxK.LfdNr # vNr;
+      Erx # RekInsert(gFile,0,'MAN');
+    UNTIL (Erx = _rOK);
+
+    if (Erx<>_rOk) then begin
+      Msg(001000+Erx,gTitle,0,0,0);
+      RETURN False;
+    end;
+
+    FxK.Anlage.Datum  # SysDate();
+    FxK.Anlage.Zeit   # Now;
+    FxK.Anlage.User   # Userinfo(_Username,cnvia(userinfo(_UserCurrent)));
+  end;
+
+  RETURN true;  // Speichern erfolgreich
+end;
+
+
+//========================================================================
+//  RecCleanup
+//              Aufräumen bei "Cancel"
+//========================================================================
+sub RecCleanup() : logic
+begin
+  RETURN true;
+end;
+
+
+//========================================================================
+//  RecDel
+//          Satz soll gelöscht werden
+//========================================================================
+sub RecDel()
+begin
+  // Diesen Eintrag wirklich löschen?
+  if (Msg(000001,'',_WinIcoQuestion,_WinDialogYesNo,2)=_WinIdNo) then RETURN;
+
+  RekDelete(gFile,0,'MAN');
+end;
+
+
+//========================================================================
+//  EvtFocusInit
+//            Fokus auf Objekt neu gesetzt
+//========================================================================
+sub EvtFocusInit (
+  aEvt                  : event;        // Ereignis
+  aFocusObject          : int           // vorheriges Objekt
+) : logic
+begin
+
+  // Auswahlfelder aktivieren
+  if (Lib_Pflichtfelder:TypAuswahlFeld(aEvt:Obj)<>'') then
+    Lib_GuiCom:AuswahlEnable(aEvt:Obj);
+  else
+    Lib_GuiCom:AuswahlDisable(aEvt:Obj);
+
+end;
+
+
+//========================================================================
+//  EvtFocusTerm
+//            Fokus vom Objekt wegbewegen
+//========================================================================
+sub EvtFocusTerm (
+  aEvt                  : event;        // Ereignis
+  aFocusObject          : int           // neu zu fokusierendes Objekt
+) : logic
+begin
+
+  // logische Prüfung von Verknüpfungen
+  RefreshIfm(aEvt:Obj->wpName);
+
+  RETURN true;
+end;
+
+
+//========================================================================
+//  Auswahl
+//          Auswahliste öffnen
+//========================================================================
+sub Auswahl ( aBereich : alpha )
+local begin
+  vA : alpha;
+end;
+begin
+  case aBereich of
+    'Kostenstelle' : begin
+      RecBufClear(846); // ZIELBUFFER LEEREN
+      gMDI # Lib_GuiCom:AddChildWindow(gMDI, 'KSt.Verwaltung',here+':AusKSt');
+      Lib_GuiCom:RunChildWindow(gMDI);
+    end;
+  end;
+end;
+
+
+//========================================================================
+//  AusKSt
+//
+//========================================================================
+sub AusKSt()
+local begin
+  vTmp  : int;
+end;
+begin
+  if (gSelected<>0) then begin
+    RecRead(846,0,_RecId,gSelected);
+    gSelected # 0;
+    // Feldübernahme
+    FxK.Kostenstelle # KSt.Nummer;
+
+    vTmp # WinFocusget();   // LastFocus-Feld refreshen
+    if (vTmp<>0) then vTmp->Winupdate(_WinUpdFld2Obj);
+  end;
+  // Focus auf Editfeld setzen:
+  $edFxK.Kostenstelle->Winfocusset(false);
+  // ggf. Labels refreshen
+  // RefreshIfm('edxxx.xxxxxxx',y);
+end;
+
+
+//========================================================================
+//  RefreshMode
+//              Setzt alle Menüs/Toolbars/Buttons passend zum Modus
+//========================================================================
+sub RefreshMode(opt aNoRefresh : logic);
+local begin
+  d_MenuItem : int;
+  vHdl : int;
+end
+begin
+
+  gMenu # gFrmMain->WinInfo(_WinMenu);
+
+  // Button & Menßs sperren
+  vHdl # gMdi->WinSearch('New');
+  if (vHdl <> 0) then
+    vHdl->wpDisabled # (vHdl->wpDisabled) or (Rechte[Rgt_FxK_Anlegen]=n);
+  vHdl # gMenu->WinSearch('Mnu.New');
+  if (vHdl <> 0) then
+    vHdl->wpDisabled # (vHdl->wpDisabled) or (Rechte[Rgt_FxK_Anlegen]=n);
+
+  vHdl # gMdi->WinSearch('Edit');
+  if (vHdl <> 0) then
+    vHdl->wpDisabled # (vHdl->wpDisabled) or (Rechte[Rgt_FxK_Aendern]=n);
+  vHdl # gMenu->WinSearch('Mnu.Edit');
+  if (vHdl <> 0) then
+    vHdl->wpDisabled # (vHdl->wpDisabled) or (Rechte[Rgt_FxK_Aendern]=n);
+
+  vHdl # gMdi->WinSearch('Delete');
+  if (vHdl <> 0) then
+    vHdl->wpDisabled # (vHdl->wpDisabled) or (Rechte[Rgt_FxK_Loeschen]=n);
+  vHdl # gMenu->WinSearch('Mnu.Delete');
+  if (vHdl <> 0) then
+    vHdl->wpDisabled # (vHdl->wpDisabled) or (Rechte[Rgt_FxK_Loeschen]=n);
+
+  RefreshIfm();
+
+end;
+
+
+//========================================================================
+//  EvtMenuCommand
+//                  Menüpunkt aufgerufen
+//========================================================================
+sub EvtMenuCommand (
+  aEvt                  : event;        // Ereignis
+  aMenuItem             : int           // Menüeintrag
+) : logic
+local begin
+  vHdl    : int;
+  vMode   : alpha;
+  vParent : int;
+  vTmp    : int;
+end;
+begin
+
+  if (Mode=c_ModeList) then RecRead(gFile,0,0,gZLList->wpdbrecid);
+  case (aMenuItem->wpName) of
+
+  
+    'Mnu.Protokoll' : begin
+      PtD_Main:View( gFile, FxK.Anlage.Datum, FxK.Anlage.Zeit, FxK.Anlage.User );
+    end;
+
+  end; // case
+
+
+end;
+
+
+//========================================================================
+//  EvtClicked
+//              Button gedrückt
+//========================================================================
+sub EvtClicked (
+  aEvt                  : event;        // Ereignis
+) : logic
+begin
+
+  if (Mode=c_ModeView) then RETURN true;
+
+  case (aEvt:Obj->wpName) of
+    'bt.Kostenstelle' : Auswahl('Kostenstelle');
+    'bt.xxxxx' :   Auswahl('...');
+    'bt.xxxxx' :   Auswahl('...');
+    'bt.xxxxx' :   Auswahl('...');
+  end;
+
+end;
+
+
+//========================================================================
+//  EvtLstDataInit
+//
+//========================================================================
+sub EvtLstDataInit(
+  aEvt      : Event;
+  aRecId    : int;
+  Opt aMark : logic;
+                  );
+begin
+//  Refreshmode();
+end;
+
+//========================================================================
+//  EvtLstSelect
+//                Zeilenauswahl von RecList/DataList
+//========================================================================
+sub EvtLstSelect(
+  aEvt                  : event;        // Ereignis
+  aRecID                : int;
+) : logic
+begin
+  RecRead(gFile,0,_recid,aRecID);
+//  RefreshMode(y);   // falls Menüs gesetzte werden sollen
+end;
+
+
+//========================================================================
+// EvtClose
+//          Schliessen eines Fensters
+//========================================================================
+sub EvtClose
+(
+  aEvt                  : event;        // Ereignis
+): logic
+begin
+  RETURN true;
+end;
+
+sub JumpTo(
+  aName : alpha;
+  aBuf  : int);
+begin
+
+  if ((aName =^ 'edFxK.Kostenstelle') AND (aBuf->FxK.Kostenstelle<>0)) then begin
+    RekLink(846,558,1,0);   // Kostenstelle holen
+    Lib_Guicom2:JumpToWindow('KSt.Verwaltung');
+    RETURN;
+  end;
+
+end;
+
+//========================================================================
+//========================================================================
+//========================================================================
+//========================================================================

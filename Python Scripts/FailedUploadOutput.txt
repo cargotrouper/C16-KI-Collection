@@ -1,0 +1,20 @@
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\Adr_V2_Main.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\App_Main.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\Auf_P_Main.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\Auf_SL_RV_Main.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\BA1_F_Data.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\BA1_Planung_Walzen.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\chat_2023_09_22_13_17_55.md
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\chat_2023_09_22_14_10_38.md
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\Con2_Main.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\Con_Data.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\Def_Rights.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\Dlg_Standard.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\Form_Parse_Mat.prc
+Datei C:\Users\mk1\Documents\ki\c16sc\KI\StahlControl Prozeduren\F_STD_Adr_Akte.prc
+Datei Sel_Main.prc
+Datei SVC_BAG_IO_0003.prc
+Datei Conzept C16 Handbuch_conv-2223-3333.pdf
+Datei Conzept C16 Handbuch_conv-3334-4444.pdf
+Datei Conzept C16 Handbuch_conv-4445-5555.pdf
+Datei Conzept C16 Handbuch_conv-5734.pdf

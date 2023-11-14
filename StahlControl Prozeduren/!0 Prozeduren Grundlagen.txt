@@ -1,0 +1,13 @@
+Hier werden die Grundlegendsten Prozedur Präfix Bezeichner erklärt die in StahlControl mit der Sprache C16 benutzt werden:
+L_ = Listen Prozeduren
+F_ = Form, Dialog oder Druckform Prozeduren
+BA1_ = Betriebsauftrag Prozeduren
+Ein_ = Bestellung/Wareneingang Prozeduren
+SFX_ = Speziell Prozeduren für einen bestimmten Kunden
+WoF_ = Workflow Prozeduren
+LFS_ = Lieferschein Prozeduren
+AUF_ = Auftragsprozeduren
+
+
+
+
